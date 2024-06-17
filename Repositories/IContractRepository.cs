@@ -8,6 +8,6 @@ public interface IContractRepository
     Task<Contract> UpdateAsync(int id, Contract contract);
     Task<Contract> GetByIdAsync(int id);
     Task<bool> DeleteAsync(int id);
-    Task<IEnumerable<Contract>> GetAllPendingContractsAsync();
+    Task<IEnumerable<Contract>> GetAllAsync();
     Task<Contract> GetByClientAndSoftwareAsync(int clientId, int softwareId);
 }

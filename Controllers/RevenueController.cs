@@ -1,7 +1,6 @@
-﻿using APBD_Project.Data;
-using APBD_Project.Services;
+﻿using APBD_Project.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace APBD_Project.Controllers;
 
@@ -17,23 +16,30 @@ public class RevenueController : ControllerBase
     }
 
     [HttpGet("current")]
-    public async Task<IActionResult> GetCurrentRevenue()
+    public async Task<ActionResult<decimal>> GetCurrentRevenue([FromQuery] string currency = "PLN")
     {
-        var currentRevenue = await _revenueService.GetCurrentRevenue();
-        return Ok(currentRevenue);
+        var revenue = await _revenueService.CalculateCurrentRevenueAsync(currency);
+        return Ok(revenue);
     }
 
     [HttpGet("predicted")]
-    public async Task<IActionResult> GetPredictedRevenue()
+    public async Task<ActionResult<decimal>> GetPredictedRevenue([FromQuery] string currency = "PLN")
     {
-        var predictedRevenue = await _revenueService.GetPredictedRevenue();
-        return Ok(predictedRevenue);
+        var revenue = await _revenueService.CalculatePredictedRevenueAsync(currency);
+        return Ok(revenue);
     }
 
-    [HttpGet("currency")]
-    public async Task<IActionResult> GetRevenueInCurrency(string currency)
+    [HttpGet("current/product/{softwareId}")]
+    public async Task<ActionResult<decimal>> GetCurrentRevenueForProduct(int softwareId, [FromQuery] string currency = "PLN")
     {
-        var revenueInCurrency = await _revenueService.GetRevenueInCurrency(currency);
-        return Ok(revenueInCurrency);
+        var revenue = await _revenueService.CalculateCurrentRevenueForProductAsync(softwareId, currency);
+        return Ok(revenue);
+    }
+
+    [HttpGet("predicted/product/{softwareId}")]
+    public async Task<ActionResult<decimal>> GetPredictedRevenueForProduct(int softwareId, [FromQuery] string currency = "PLN")
+    {
+        var revenue = await _revenueService.CalculatePredictedRevenueForProductAsync(softwareId, currency);
+        return Ok(revenue);
     }
 }

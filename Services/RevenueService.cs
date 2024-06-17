@@ -6,46 +6,101 @@ public class RevenueService
 {
     private readonly IPaymentRepository _paymentRepository;
     private readonly IContractRepository _contractRepository;
+    private readonly CurrencyService _currencyService;
 
-    public RevenueService(IPaymentRepository paymentRepository, IContractRepository contractRepository)
+    public RevenueService(IPaymentRepository paymentRepository, IContractRepository contractRepository, CurrencyService currencyService)
     {
         _paymentRepository = paymentRepository;
         _contractRepository = contractRepository;
+        _currencyService = currencyService;
     }
 
-    public async Task<decimal> GetCurrentRevenue()
+    public async Task<decimal> CalculateCurrentRevenueAsync(string currency = "PLN")
     {
         var payments = await _paymentRepository.GetAllAsync();
-        return payments.Sum(p => p.Amount);
+        var revenue = payments.Sum(p => p.Amount);
+        if (currency != "PLN")
+        {
+            var rate = await _currencyService.GetExchangeRateAsync(currency);
+            revenue *= rate;
+        }
+        return revenue;
     }
 
-    public async Task<decimal> GetPredictedRevenue()
+    public async Task<decimal> CalculatePredictedRevenueAsync(string currency = "PLN")
     {
+        var contracts = await _contractRepository.GetAllAsync();
+        var totalContractValue = contracts.Sum(c => c.Price);
+
         var payments = await _paymentRepository.GetAllAsync();
-        var predictedRevenue = payments.Sum(p => p.Amount);
+        var receivedPayments = payments.Sum(p => p.Amount);
 
-        var contracts = await _contractRepository.GetAllPendingContractsAsync();
-        predictedRevenue += contracts.Sum(c => c.Price);
-
+        var predictedRevenue = totalContractValue + receivedPayments;
+        if (currency != "PLN")
+        {
+            var rate = await _currencyService.GetExchangeRateAsync(currency);
+            predictedRevenue *= rate;
+        }
         return predictedRevenue;
     }
 
-    public async Task<decimal> GetRevenueInCurrency(string currency)
+    public async Task<decimal> CalculateCurrentRevenueForProductAsync(int softwareId, string currency = "PLN")
     {
         var payments = await _paymentRepository.GetAllAsync();
-        var currentRevenue = payments.Sum(p => p.Amount);
+        var relevantPayments = payments.Where(p =>
+        {
+            if (p.Contract == null)
+            {
+                return false;
+            }
 
-        var exchangeRate = await GetExchangeRate(currency); // Implement this method to fetch exchange rate from a public service
-        var revenueInCurrency = currentRevenue * exchangeRate;
+            if (p.Contract.Software == null)
+            {
+                return false;
+            }
 
-        return revenueInCurrency;
+            return p.Contract.SoftwareId == softwareId;
+        }).ToList();
+
+        var revenue = relevantPayments.Sum(p => p.Amount);
+        if (currency != "PLN")
+        {
+            var rate = await _currencyService.GetExchangeRateAsync(currency);
+            revenue *= rate;
+        }
+        return revenue;
     }
 
-    private async Task<decimal> GetExchangeRate(string currency)
+    public async Task<decimal> CalculatePredictedRevenueForProductAsync(int softwareId, string currency = "PLN")
     {
-        // Fetch exchange rate from a public service
-        // Example: using HttpClient to call an external API
-        // For now, return a dummy exchange rate
-        return await Task.FromResult(1.0m);
+        var contracts = await _contractRepository.GetAllAsync();
+        var relevantContracts = contracts.Where(c => c.SoftwareId == softwareId);
+        var totalContractValue = relevantContracts.Sum(c => c.Price);
+
+        var payments = await _paymentRepository.GetAllAsync();
+        var relevantPayments = payments.Where(p =>
+        {
+            if (p.Contract == null)
+            {
+                return false;
+            }
+
+            if (p.Contract.Software == null)
+            {
+                return false;
+            }
+
+            return p.Contract.SoftwareId == softwareId;
+        }).ToList();
+
+        var receivedPayments = relevantPayments.Sum(p => p.Amount);
+
+        var predictedRevenue = totalContractValue + receivedPayments;
+        if (currency != "PLN")
+        {
+            var rate = await _currencyService.GetExchangeRateAsync(currency);
+            predictedRevenue *= rate;
+        }
+        return predictedRevenue;
     }
 }

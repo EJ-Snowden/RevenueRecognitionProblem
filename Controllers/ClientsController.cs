@@ -22,7 +22,7 @@ public class ClientsController : ControllerBase
         try
         {
             var client = await _clientService.AddIndividualClientAsync(individualClientDto);
-            return CreatedAtAction(nameof(GetClient), new { id = client.ClientId }, client);
+            return client;
         }
         catch (ArgumentException ex)
         {
@@ -36,15 +36,13 @@ public class ClientsController : ControllerBase
         try
         {
             var client = await _clientService.AddCompanyClientAsync(companyClientDto);
-            return CreatedAtAction(nameof(GetClient), new { id = client.ClientId }, client);
+            return client;
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
     }
-
-
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetClient(int id)

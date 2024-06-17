@@ -47,11 +47,11 @@ public class ContractRepository : IContractRepository
         return true;
     }
     
-    public async Task<IEnumerable<Contract>> GetAllPendingContractsAsync()  // Implement this method
+    public async Task<IEnumerable<Contract>> GetAllAsync()
     {
-        return await _context.Contracts.Where(c => !c.IsSigned).ToListAsync();
+        return await _context.Contracts.Include(c => c.Client).Include(c => c.Software).ToListAsync();
     }
-    public async Task<Contract> GetByClientAndSoftwareAsync(int clientId, int softwareId) // Implement this method
+    public async Task<Contract> GetByClientAndSoftwareAsync(int clientId, int softwareId)
     {
         return await _context.Contracts.FirstOrDefaultAsync(c => c.ClientId == clientId && c.SoftwareId == softwareId);
     }
