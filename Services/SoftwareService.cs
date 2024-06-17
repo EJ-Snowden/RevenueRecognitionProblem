@@ -4,15 +4,8 @@ using APBD_Project.Repositories;
 
 namespace APBD_Project.Services;
 
-public class SoftwareService
+public class SoftwareService(ISoftwareRepository softwareRepository)
 {
-    private readonly ISoftwareRepository _softwareRepository;
-
-    public SoftwareService(ISoftwareRepository softwareRepository)
-    {
-        _softwareRepository = softwareRepository;
-    }
-
     public async Task<Software> AddSoftwareAsync(SoftwareDto softwareDto)
     {
         var software = new Software
@@ -23,12 +16,12 @@ public class SoftwareService
             Category = softwareDto.Category
         };
 
-        return await _softwareRepository.AddAsync(software);
+        return await softwareRepository.AddAsync(software);
     }
 
     public async Task<Software> UpdateSoftwareAsync(int id, SoftwareDto softwareDto)
     {
-        var software = await _softwareRepository.GetByIdAsync(id);
+        var software = await softwareRepository.GetByIdAsync(id);
         if (software == null) throw new ArgumentException("Software not found");
 
         software.Name = softwareDto.Name;
@@ -36,22 +29,22 @@ public class SoftwareService
         software.CurrentVersion = softwareDto.CurrentVersion;
         software.Category = softwareDto.Category;
 
-        return await _softwareRepository.UpdateAsync(software);
+        return await softwareRepository.UpdateAsync(software);
     }
 
     public async Task<Software> GetSoftwareByIdAsync(int id)
     {
-        return await _softwareRepository.GetByIdAsync(id);
+        return await softwareRepository.GetByIdAsync(id);
     }
 
     public async Task<IEnumerable<Software>> GetAllSoftwareAsync()
     {
-        return await _softwareRepository.GetAllAsync();
+        return await softwareRepository.GetAllAsync();
     }
 
     public async Task<Discount> AddDiscountAsync(int softwareId, DiscountDto discountDto)
     {
-        var software = await _softwareRepository.GetByIdAsync(softwareId);
+        var software = await softwareRepository.GetByIdAsync(softwareId);
         if (software == null)
         {
             throw new ArgumentException("Software not found");
@@ -66,16 +59,15 @@ public class SoftwareService
             EndDate = discountDto.EndDate,
             SoftwareId = softwareId
         };
-
         software.Discounts.Add(discount);
-        await _softwareRepository.UpdateAsync(software);
+        await softwareRepository.UpdateAsync(software);
 
         return discount;
     }
 
     public async Task<IEnumerable<Discount>> GetDiscountsForSoftwareAsync(int softwareId)
     {
-        var software = await _softwareRepository.GetByIdAsync(softwareId);
-        return software?.Discounts ?? new List<Discount>();
+        var software = await softwareRepository.GetByIdAsync(softwareId);
+        return software.Discounts;
     }
 }

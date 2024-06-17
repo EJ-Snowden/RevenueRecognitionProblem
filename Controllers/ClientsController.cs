@@ -7,24 +7,17 @@ namespace APBD_Project.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ClientsController : ControllerBase
+public class ClientsController(ClientService clientService) : ControllerBase
 {
-    private readonly ClientService _clientService;
-
-    public ClientsController(ClientService clientService)
-    {
-        _clientService = clientService;
-    }
-    
     [HttpPost("individual")]
     public async Task<ActionResult<Client>> AddIndividualClient(IndividualClientDto individualClientDto)
     {
         try
         {
-            var client = await _clientService.AddIndividualClientAsync(individualClientDto);
+            var client = await clientService.AddIndividualClientAsync(individualClientDto);
             return client;
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
@@ -35,10 +28,10 @@ public class ClientsController : ControllerBase
     {
         try
         {
-            var client = await _clientService.AddCompanyClientAsync(companyClientDto);
+            var client = await clientService.AddCompanyClientAsync(companyClientDto);
             return client;
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
@@ -47,7 +40,7 @@ public class ClientsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetClient(int id)
     {
-        var client = await _clientService.GetClientByIdAsync(id);
+        var client = await clientService.GetClientByIdAsync(id);
         if (client == null) return NotFound();
         return Ok(client);
     }
@@ -57,16 +50,12 @@ public class ClientsController : ControllerBase
     {
         try
         {
-            var client = await _clientService.UpdateIndividualClientAsync(id, updateDto);
+            var client = await clientService.UpdateIndividualClientAsync(id, updateDto);
             return Ok(client);
         }
-        catch (KeyNotFoundException ex)
+        catch (Exception ex)
         {
             return NotFound(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
         }
     }
 
@@ -75,23 +64,19 @@ public class ClientsController : ControllerBase
     {
         try
         {
-            var client = await _clientService.UpdateCompanyClientAsync(id, updateDto);
+            var client = await clientService.UpdateCompanyClientAsync(id, updateDto);
             return Ok(client);
         }
-        catch (KeyNotFoundException ex)
+        catch (Exception ex)
         {
             return NotFound(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
         }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteClient(int id)
     {
-        var result = await _clientService.DeleteClientAsync(id);
+        var result = await clientService.DeleteClientAsync(id);
         if (!result) return NotFound();
         return Ok("Client was deleted successfully");
     }

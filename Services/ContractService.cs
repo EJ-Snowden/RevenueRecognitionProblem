@@ -1,61 +1,46 @@
 ﻿using APBD_Project.DTOs;
 using APBD_Project.Models;
 using APBD_Project.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace APBD_Project.Services;
 
-public class ContractService
+public class ContractService(
+    IContractRepository contractRepository,
+    IClientRepository clientRepository,
+    ISoftwareRepository softwareRepository,
+    IPaymentRepository paymentRepository)
 {
-    private readonly IContractRepository _contractRepository;
-    private readonly IClientRepository _clientRepository;
-    private readonly ISoftwareRepository _softwareRepository;
-    private readonly IPaymentRepository _paymentRepository;
-
-    public ContractService(
-        IContractRepository contractRepository,
-        IClientRepository clientRepository,
-        ISoftwareRepository softwareRepository,
-        IPaymentRepository paymentRepository)
-    {
-        _contractRepository = contractRepository;
-        _clientRepository = clientRepository;
-        _softwareRepository = softwareRepository;
-        _paymentRepository = paymentRepository;
-    }
-
     public async Task<Contract> AddContract(ContractDto contractDto)
     {
-        var client = await _clientRepository.GetByIdAsync(contractDto.ClientId);
-        if (client == null) throw new ArgumentException("Client not found");
+        var client = await clientRepository.GetByIdAsync(contractDto.ClientId);
+        if (client == null) throw new ArgumentException("No such client was found");
 
-        var software = await _softwareRepository.GetByIdAsync(contractDto.SoftwareId);
-        if (software == null) throw new ArgumentException("Software not found");
+        var software = await softwareRepository.GetByIdAsync(contractDto.SoftwareId);
+        if (software == null) throw new ArgumentException("No such software was found");
         
-        var activeContract = await _contractRepository.GetByClientAndSoftwareAsync(contractDto.ClientId, contractDto.SoftwareId);
+        var activeContract = await contractRepository.GetByClientAndSoftwareAsync(contractDto.ClientId, contractDto.SoftwareId);
         if (activeContract != null) throw new InvalidOperationException("Client already has an active contract for this software");
 
         
         if ((contractDto.EndDate - contractDto.StartDate).Days < 3 || (contractDto.EndDate - contractDto.StartDate).Days > 30)
         {
-            throw new ArgumentException("The contract duration must be between 3 and 30 days.");
+            throw new ArgumentException("The contract duration must be between 3 and 30 days");
         }
         
-        decimal price = contractDto.Price;
-        bool isReturningClient = await _clientRepository.HasPreviousContractsAsync(contractDto.ClientId);
+        var price = contractDto.Price;
+        var isReturningClient = await clientRepository.HasPreviousContractsAsync(contractDto.ClientId);
         if (isReturningClient)
         {
             price *= 0.95m;
         }
-        
         price += contractDto.SupportYears * 1000m;
         
         var contract = new Contract
         {
             ClientId = contractDto.ClientId,
-            Client = await _clientRepository.GetByIdAsync(contractDto.ClientId),
+            Client = await clientRepository.GetByIdAsync(contractDto.ClientId),
             SoftwareId = contractDto.SoftwareId,
-            Software = await _softwareRepository.GetByIdAsync(contractDto.SoftwareId),
+            Software = await softwareRepository.GetByIdAsync(contractDto.SoftwareId),
             StartDate = contractDto.StartDate,
             EndDate = contractDto.EndDate,
             Price = price,
@@ -63,12 +48,12 @@ public class ContractService
             SupportYears = contractDto.SupportYears
         };
 
-        return await _contractRepository.AddAsync(contract);
+        return await contractRepository.AddAsync(contract);
     }
 
-    public async Task<bool> MakePaymentAsync(int contractId, decimal amount)
+    public async Task MakePaymentAsync(int contractId, decimal amount)
     {
-        var contract = await _contractRepository.GetByIdAsync(contractId);
+        var contract = await contractRepository.GetByIdAsync(contractId);
         if (contract == null) throw new ArgumentException("Contract not found");
 
         if (contract.EndDate < DateTime.UtcNow)
@@ -85,24 +70,22 @@ public class ContractService
         var payment = new Payment
         {
             ContractId = contractId,
-            Contract = await _contractRepository.GetByIdAsync(contractId),
+            Contract = await contractRepository.GetByIdAsync(contractId),
             Amount = amount,
             PaymentDate = DateTime.UtcNow
         };
 
-        await _paymentRepository.AddAsync(payment);
+        await paymentRepository.AddAsync(payment);
 
         if (totalPayments + amount == contract.Price)
         {
             contract.IsSigned = true;
-            await _contractRepository.UpdateAsync(contractId, contract);
+            await contractRepository.UpdateAsync(contractId, contract);
         }
-
-        return true;
     }
 
     public async Task<Contract> GetContractById(int id)
     {
-        return await _contractRepository.GetByIdAsync(id);
+        return await contractRepository.GetByIdAsync(id);
     }
 }
