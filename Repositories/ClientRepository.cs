@@ -32,18 +32,6 @@ public class ClientRepository : IClientRepository
         return await _context.Clients.FindAsync(id);
     }
 
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var client = await _context.Clients.FindAsync(id);
-        if (client == null)
-        {
-            return false;
-        }
-        client.IsDeleted = true;
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
     public async Task<Client> GetByPESELAsync(string pesel)
     {
         return await _context.Clients.FirstOrDefaultAsync(c => c.PESEL == pesel);

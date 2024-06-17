@@ -19,10 +19,26 @@ namespace APBD_Project.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure relationships and constraints
-
             modelBuilder.Entity<Client>()
                 .HasKey(c => c.ClientId);
+            
+            modelBuilder.Entity<Client>(entity =>
+            {
+                entity.Property(e => e.CompanyName).IsRequired(false);
+                entity.Property(e => e.KRS).IsRequired(false);
+                entity.Property(e => e.PESEL).IsRequired(false);
+                entity.Property(e => e.CompanyName).IsRequired(false);
+                entity.Property(e => e.FirstName).IsRequired(false);
+                entity.Property(e => e.LastName).IsRequired(false);
+
+                entity.HasIndex(e => e.KRS)
+                    .IsUnique()
+                    .HasFilter("[KRS] IS NOT NULL");
+
+                entity.HasIndex(e => e.PESEL)
+                    .IsUnique()
+                    .HasFilter("[PESEL] IS NOT NULL");
+            });
 
             modelBuilder.Entity<Software>()
                 .HasKey(s => s.SoftwareId);
@@ -51,12 +67,10 @@ namespace APBD_Project.Data
             modelBuilder.Entity<Discount>()
                 .HasKey(d => d.DiscountId);
 
-            // Configure soft delete
             modelBuilder.Entity<Client>().Property(c => c.IsDeleted).HasDefaultValue(false);
 
-            // Configure unique constraints
-            modelBuilder.Entity<Client>().HasIndex(c => c.PESEL).IsUnique().HasFilter("[PESEL] IS NOT NULL");
-            modelBuilder.Entity<Client>().HasIndex(c => c.KRS).IsUnique().HasFilter("[KRS] IS NOT NULL");
+            // modelBuilder.Entity<Client>().HasIndex(c => c.PESEL).IsUnique().HasFilter("[PESEL] IS NOT NULL");
+            // modelBuilder.Entity<Client>().HasIndex(c => c.KRS).IsUnique().HasFilter("[KRS] IS NOT NULL");
             modelBuilder.Entity<Contract>().HasIndex(c => new { c.ClientId, c.SoftwareId }).IsUnique();
         }
     }

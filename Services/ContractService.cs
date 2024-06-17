@@ -38,6 +38,11 @@ public class ContractService
             throw new ArgumentException("A contract for this client and software already exists.");
         }
         
+        if ((contractDto.EndDate - contractDto.StartDate).Days < 3 || (contractDto.EndDate - contractDto.StartDate).Days > 30)
+        {
+            throw new ArgumentException("The contract duration must be between 3 and 30 days.");
+        }
+        
         var contract = new Contract
         {
             ClientId = contractDto.ClientId,
@@ -60,14 +65,12 @@ public class ContractService
             throw new ArgumentException("The specified contract does not exist.");
         }
 
-        // Ensure client exists
         var existingClient = await _clientRepository.GetByIdAsync(contractDto.ClientId);
         if (existingClient == null)
         {
             throw new ArgumentException("The specified client does not exist.");
         }
 
-        // Ensure software exists
         var existingSoftware = await _softwareRepository.GetByIdAsync(contractDto.SoftwareId);
         if (existingSoftware == null)
         {

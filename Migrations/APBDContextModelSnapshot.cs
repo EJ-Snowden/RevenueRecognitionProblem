@@ -35,7 +35,6 @@ namespace APBD_Project.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -43,7 +42,6 @@ namespace APBD_Project.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -52,15 +50,12 @@ namespace APBD_Project.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<string>("KRS")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PESEL")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PhoneNumber")
@@ -198,42 +193,6 @@ namespace APBD_Project.Migrations
                     b.ToTable("Software");
                 });
 
-            modelBuilder.Entity("APBD_Project.Models.Subscription", b =>
-                {
-                    b.Property<int>("SubscriptionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubscriptionId"));
-
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("RenewalPeriod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SoftwareId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("SubscriptionId");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("SoftwareId");
-
-                    b.ToTable("Subscriptions");
-                });
-
             modelBuilder.Entity("APBD_Project.Models.Contract", b =>
                 {
                     b.HasOne("APBD_Project.Models.Client", "Client")
@@ -262,25 +221,6 @@ namespace APBD_Project.Migrations
                         .IsRequired();
 
                     b.Navigation("Contract");
-                });
-
-            modelBuilder.Entity("APBD_Project.Models.Subscription", b =>
-                {
-                    b.HasOne("APBD_Project.Models.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APBD_Project.Models.Software", "Software")
-                        .WithMany()
-                        .HasForeignKey("SoftwareId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Software");
                 });
 #pragma warning restore 612, 618
         }

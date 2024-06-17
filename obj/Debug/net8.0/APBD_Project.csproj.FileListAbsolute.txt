@@ -136,3 +136,4 @@ C:\Users\Denis\RiderProjects\APBD_Project\APBD_Project\obj\Debug\net8.0\APBD_Pro
 C:\Users\Denis\RiderProjects\APBD_Project\APBD_Project\obj\Debug\net8.0\APBD_Project.genruntimeconfig.cache
 C:\Users\Denis\RiderProjects\APBD_Project\APBD_Project\obj\Debug\net8.0\ref\APBD_Project.dll
 C:\Users\Denis\RiderProjects\APBD_Project\APBD_Project\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Denis\RiderProjects\APBD_Project\APBD_Project\obj\Debug\net8.0\APBD_Project.sourcelink.json

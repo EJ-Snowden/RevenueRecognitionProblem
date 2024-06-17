@@ -1,8 +1,7 @@
-﻿using APBD_Project.Data;
+﻿using APBD_Project.DTOs;
 using APBD_Project.Models;
 using APBD_Project.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace APBD_Project.Controllers;
 
@@ -16,49 +15,86 @@ public class ClientsController : ControllerBase
     {
         _clientService = clientService;
     }
-
-    [HttpPost]
-    public async Task<IActionResult> AddClient(Client client)
+    
+    [HttpPost("individual")]
+    public async Task<ActionResult<Client>> AddIndividualClient(IndividualClientDto individualClientDto)
     {
         try
         {
-            var createdClient = await _clientService.AddClient(client);
-            return CreatedAtAction(nameof(GetClient), new { id = createdClient.ClientId }, createdClient);
+            var client = await _clientService.AddIndividualClientAsync(individualClientDto);
+            return CreatedAtAction(nameof(GetClient), new { id = client.ClientId }, client);
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpPost("company")]
+    public async Task<ActionResult<Client>> AddCompanyClient(CompanyClientDto companyClientDto)
+    {
+        try
+        {
+            var client = await _clientService.AddCompanyClientAsync(companyClientDto);
+            return CreatedAtAction(nameof(GetClient), new { id = client.ClientId }, client);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetClient(int id)
     {
-        var client = await _clientService.GetClientById(id);
+        var client = await _clientService.GetClientByIdAsync(id);
         if (client == null) return NotFound();
         return Ok(client);
     }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateClient(int id, Client updatedClient)
+    
+    [HttpPut("individual/{id}")]
+    public async Task<ActionResult<Client>> UpdateIndividualClient(int id, IndividualClientUpdateDto updateDto)
     {
         try
         {
-            var client = await _clientService.UpdateClient(id, updatedClient);
-            if (client == null) return NotFound();
+            var client = await _clientService.UpdateIndividualClientAsync(id, updateDto);
+            return Ok(client);
         }
-        catch (ArgumentException ex)
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
         }
-        return NoContent();
+    }
+
+    [HttpPut("company/{id}")]
+    public async Task<ActionResult<Client>> UpdateCompanyClient(int id, CompanyClientUpdateDto updateDto)
+    {
+        try
+        {
+            var client = await _clientService.UpdateCompanyClientAsync(id, updateDto);
+            return Ok(client);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteClient(int id)
     {
-        var result = await _clientService.DeleteClient(id);
+        var result = await _clientService.DeleteClientAsync(id);
         if (!result) return NotFound();
-        return NoContent();
+        return Ok("Client was deleted successfully");
     }
 }

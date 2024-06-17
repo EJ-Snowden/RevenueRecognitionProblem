@@ -22,9 +22,9 @@ namespace APBD_Project.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PESEL = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    KRS = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PESEL = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    KRS = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -96,36 +96,6 @@ namespace APBD_Project.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Subscriptions",
-                columns: table => new
-                {
-                    SubscriptionId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ClientId = table.Column<int>(type: "int", nullable: false),
-                    SoftwareId = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RenewalPeriod = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Subscriptions", x => x.SubscriptionId);
-                    table.ForeignKey(
-                        name: "FK_Subscriptions_Clients_ClientId",
-                        column: x => x.ClientId,
-                        principalTable: "Clients",
-                        principalColumn: "ClientId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Subscriptions_Software_SoftwareId",
-                        column: x => x.SoftwareId,
-                        principalTable: "Software",
-                        principalColumn: "SoftwareId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Payments",
                 columns: table => new
                 {
@@ -161,9 +131,10 @@ namespace APBD_Project.Migrations
                 filter: "[PESEL] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Contracts_ClientId",
+                name: "IX_Contracts_ClientId_SoftwareId",
                 table: "Contracts",
-                column: "ClientId");
+                columns: new[] { "ClientId", "SoftwareId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Contracts_SoftwareId",
@@ -174,16 +145,6 @@ namespace APBD_Project.Migrations
                 name: "IX_Payments_ContractId",
                 table: "Payments",
                 column: "ContractId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Subscriptions_ClientId",
-                table: "Subscriptions",
-                column: "ClientId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Subscriptions_SoftwareId",
-                table: "Subscriptions",
-                column: "SoftwareId");
         }
 
         /// <inheritdoc />
@@ -194,9 +155,6 @@ namespace APBD_Project.Migrations
 
             migrationBuilder.DropTable(
                 name: "Payments");
-
-            migrationBuilder.DropTable(
-                name: "Subscriptions");
 
             migrationBuilder.DropTable(
                 name: "Contracts");

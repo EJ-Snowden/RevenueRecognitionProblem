@@ -1,4 +1,5 @@
-﻿using APBD_Project.Models;
+﻿using APBD_Project.DTOs;
+using APBD_Project.Models;
 using APBD_Project.Repositories;
 
 namespace APBD_Project.Services;
@@ -11,60 +12,102 @@ public class ClientService
     {
         _clientRepository = clientRepository;
     }
-
-    public async Task<Client> AddClient(Client client)
+    
+    public async Task<Client> AddIndividualClientAsync(IndividualClientDto individualClientDto)
     {
-        if (!string.IsNullOrEmpty(client.PESEL))
+        var client = new Client
         {
-            var existingClientByPESEL = await _clientRepository.GetByPESELAsync(client.PESEL);
-            if (existingClientByPESEL != null)
-            {
-                throw new ArgumentException("A client with the same PESEL already exists.");
-            }
-        }
+            FirstName = individualClientDto.FirstName,
+            LastName = individualClientDto.LastName,
+            Address = individualClientDto.Address,
+            Email = individualClientDto.Email,
+            PhoneNumber = individualClientDto.PhoneNumber,
+            PESEL = individualClientDto.PESEL,
+            IsDeleted = false
+        };
 
-        // Check for existing KRS if it's a company
-        if (!string.IsNullOrEmpty(client.KRS))
-        {
-            var existingClientByKRS = await _clientRepository.GetByKRSAsync(client.KRS);
-            if (existingClientByKRS != null)
-            {
-                throw new ArgumentException("A client with the same KRS already exists.");
-            }
-        }
         return await _clientRepository.AddAsync(client);
     }
 
-    public async Task<Client> UpdateClient(int id, Client client)
+    public async Task<Client> AddCompanyClientAsync(CompanyClientDto companyClientDto)
     {
-        if (!string.IsNullOrEmpty(client.PESEL))
+        var client = new Client
         {
-            var existingClientByPESEL = await _clientRepository.GetByPESELAsync(client.PESEL);
-            if (existingClientByPESEL != null)
-            {
-                throw new ArgumentException("A client with the same PESEL already exists.");
-            }
-        }
+            CompanyName = companyClientDto.CompanyName,
+            Address = companyClientDto.Address,
+            Email = companyClientDto.Email,
+            PhoneNumber = companyClientDto.PhoneNumber,
+            KRS = companyClientDto.KRS,
+            IsDeleted = false
+        };
 
-        // Check for existing KRS if it's a company
+        return await _clientRepository.AddAsync(client);
+    }
+    
+    public async Task<Client> UpdateIndividualClientAsync(int id, IndividualClientUpdateDto updateDto)
+    {
+        var client = await _clientRepository.GetByIdAsync(id);
+        if (client == null || client.IsDeleted)
+        {
+            throw new KeyNotFoundException("Client not found.");
+        }
+        
         if (!string.IsNullOrEmpty(client.KRS))
         {
-            var existingClientByKRS = await _clientRepository.GetByKRSAsync(client.KRS);
-            if (existingClientByKRS != null)
-            {
-                throw new ArgumentException("A client with the same KRS already exists.");
-            }
+            throw new InvalidOperationException("Cannot update an individual client with company data.");
         }
+
+        client.Address = updateDto.Address;
+        client.Email = updateDto.Email;
+        client.PhoneNumber = updateDto.PhoneNumber;
+        if (!string.IsNullOrEmpty(updateDto.FirstName)) client.FirstName = updateDto.FirstName;
+        if (!string.IsNullOrEmpty(updateDto.LastName)) client.LastName = updateDto.LastName;
+
         return await _clientRepository.UpdateAsync(id, client);
     }
 
-    public async Task<Client> GetClientById(int id)
+    public async Task<Client> UpdateCompanyClientAsync(int id, CompanyClientUpdateDto updateDto)
     {
-        return await _clientRepository.GetByIdAsync(id);
+        var client = await _clientRepository.GetByIdAsync(id);
+        if (client == null || client.IsDeleted)
+        {
+            throw new KeyNotFoundException("Client not found.");
+        }
+        if (!string.IsNullOrEmpty(client.PESEL))
+        {
+            throw new InvalidOperationException("Cannot update a company client with individual data.");
+        }
+        
+        client.Address = updateDto.Address;
+        client.Email = updateDto.Email;
+        client.PhoneNumber = updateDto.PhoneNumber;
+        if (!string.IsNullOrEmpty(updateDto.CompanyName)) client.CompanyName = updateDto.CompanyName;
+
+        return await _clientRepository.UpdateAsync(id, client);
     }
 
-    public async Task<bool> DeleteClient(int id)
+    public async Task<Client> GetClientByIdAsync(int id)
     {
-        return await _clientRepository.DeleteAsync(id);
+        var client = await _clientRepository.GetByIdAsync(id);
+        if (client == null || client.IsDeleted)
+        {
+            throw new KeyNotFoundException("Client not found.");
+        }
+
+        return client;
+    }
+
+    public async Task<bool> DeleteClientAsync(int id)
+    {
+        var client = await _clientRepository.GetByIdAsync(id);
+        if (client == null || client.IsDeleted)
+        {
+            throw new KeyNotFoundException("Client not found.");
+        }
+
+        client.IsDeleted = true;
+        await _clientRepository.UpdateAsync(id, client);
+
+        return true;
     }
 }
