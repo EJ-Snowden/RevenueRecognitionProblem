@@ -1,8 +1,8 @@
 ﻿using APBD_Project.Data;
+using APBD_Project.DTOs;
 using APBD_Project.Models;
 using APBD_Project.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace APBD_Project.Controllers;
 
@@ -18,33 +18,49 @@ public class SoftwareController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddSoftware(Software software)
+    public async Task<ActionResult<Software>> AddSoftware(SoftwareDto softwareDto)
     {
-        var createdSoftware = await _softwareService.AddSoftware(software);
-        return CreatedAtAction(nameof(GetSoftware), new { id = createdSoftware.SoftwareId }, createdSoftware);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetSoftware(int id)
-    {
-        var software = await _softwareService.GetSoftwareById(id);
-        if (software == null) return NotFound();
-        return Ok(software);
+        var addedSoftware = await _softwareService.AddSoftwareAsync(softwareDto);
+        return CreatedAtAction(nameof(GetSoftwareById), new { id = addedSoftware.SoftwareId }, addedSoftware);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateSoftware(int id, Software updatedSoftware)
+    public async Task<ActionResult<Software>> UpdateSoftware(int id, SoftwareDto softwareDto)
     {
-        var software = await _softwareService.UpdateSoftware(id, updatedSoftware);
-        if (software == null) return NotFound();
-        return NoContent();
+        var updatedSoftware = await _softwareService.UpdateSoftwareAsync(id, softwareDto);
+        return Ok(updatedSoftware);
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteSoftware(int id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Software>> GetSoftwareById(int id)
     {
-        var result = await _softwareService.DeleteSoftware(id);
-        if (!result) return NotFound();
-        return NoContent();
+        var software = await _softwareService.GetSoftwareByIdAsync(id);
+        if (software == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(software);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Software>>> GetAllSoftware()
+    {
+        var softwareList = await _softwareService.GetAllSoftwareAsync();
+        return Ok(softwareList);
+    }
+
+    [HttpPost("{softwareId}/discounts")]
+    public async Task<ActionResult<Discount>> AddDiscount(int softwareId, DiscountDto discountDto)
+    {
+        var addedDiscount = await _softwareService.AddDiscountAsync(softwareId, discountDto);
+        return CreatedAtAction(nameof(GetDiscountsForSoftware), new { softwareId = softwareId }, addedDiscount);
+    }
+
+    [HttpGet("{softwareId}/discounts")]
+    public async Task<ActionResult<IEnumerable<Discount>>> GetDiscountsForSoftware(int softwareId)
+    {
+        var discounts = await _softwareService.GetDiscountsForSoftwareAsync(softwareId);
+        return Ok(discounts);
     }
 }

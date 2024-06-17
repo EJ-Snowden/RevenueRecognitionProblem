@@ -17,49 +17,50 @@ public class ContractsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddContract(ContractDto contractDto)
+    public async Task<ActionResult<Contract>> CreateContract(ContractDto contractDto)
     {
         try
         {
-            contractDto.ContractId = 0;
-            
-            var createdContract = await _contractService.AddContract(contractDto);
-            return CreatedAtAction(nameof(GetContract), new { id = createdContract.ContractId }, createdContract);
+            var contract = await _contractService.AddContract(contractDto);
+            return CreatedAtAction(nameof(GetContractById), new { id = contract.ContractId }, contract);
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("{id}/payments")]
+    public async Task<ActionResult> MakePayment(int id, [FromBody] decimal amount)
+    {
+        try
+        {
+            await _contractService.MakePaymentAsync(id, amount);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
         }
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetContract(int id)
+    public async Task<ActionResult<Contract>> GetContractById(int id)
     {
         var contract = await _contractService.GetContractById(id);
-        if (contract == null) return NotFound();
+        if (contract == null)
+        {
+            return NotFound();
+        }
+
         return Ok(contract);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateContract(int id, ContractDto updatedContract)
-    {
-        try
-        {
-            var contract = await _contractService.UpdateContract(id, updatedContract);
-            if (contract == null) return NotFound();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        return Ok();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteContract(int id)
-    {
-        var result = await _contractService.DeleteContract(id);
-        if (!result) return NotFound();
-        return NoContent();
     }
 }

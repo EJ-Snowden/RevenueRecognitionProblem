@@ -15,6 +15,8 @@ public class Contract
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public decimal Price { get; set; }
-    public bool IsSigned { get; set; }
-    public int SupportYears { get; set; }
+    public bool IsSigned { get; set; } = false;
+    public int SupportYears { get; set; } = 0;
+    
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

@@ -32,13 +32,8 @@ public class ClientRepository : IClientRepository
         return await _context.Clients.FindAsync(id);
     }
 
-    public async Task<Client> GetByPESELAsync(string pesel)
+    public async Task<bool> HasPreviousContractsAsync(int clientId)
     {
-        return await _context.Clients.FirstOrDefaultAsync(c => c.PESEL == pesel);
-    }
-
-    public async Task<Client> GetByKRSAsync(string krs)
-    {
-        return await _context.Clients.FirstOrDefaultAsync(c => c.KRS == krs);
+        return await _context.Contracts.AnyAsync(c => c.ClientId == clientId && c.IsSigned);
     }
 }

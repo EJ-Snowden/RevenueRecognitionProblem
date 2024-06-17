@@ -14,13 +14,11 @@ public class PaymentService
 
     public async Task<Payment> AddPayment(Payment payment)
     {
-        // Business logic, validation, etc.
         return await _paymentRepository.AddAsync(payment);
     }
 
     public async Task<Payment> UpdatePayment(int id, Payment payment)
     {
-        // Business logic, validation, etc.
         return await _paymentRepository.UpdateAsync(id, payment);
     }
 

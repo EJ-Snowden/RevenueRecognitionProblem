@@ -20,32 +20,20 @@ public class SoftwareRepository : ISoftwareRepository
         return software;
     }
 
-    public async Task<Software> UpdateAsync(int id, Software software)
+    public async Task<Software> UpdateAsync(Software software)
     {
         _context.Entry(software).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return software;
     }
 
-    public async Task<Software> GetByIdAsync(int id)
+    public async Task<Software> GetByIdAsync(int SoftwareId)
     {
-        return await _context.Software.FindAsync(id);
+        return await _context.Software.Include(s => s.Discounts).FirstOrDefaultAsync(s => s.SoftwareId == SoftwareId) ?? throw new InvalidOperationException();
     }
 
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var software = await _context.Software.FindAsync(id);
-        if (software == null)
-        {
-            return false;
-        }
-        _context.Software.Remove(software);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-    
     public async Task<IEnumerable<Software>> GetAllAsync()
     {
-        return await _context.Software.ToListAsync();
+        return await _context.Software.Include(s => s.Discounts).ToListAsync();
     }
 }

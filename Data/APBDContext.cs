@@ -68,9 +68,6 @@ namespace APBD_Project.Data
                 .HasKey(d => d.DiscountId);
 
             modelBuilder.Entity<Client>().Property(c => c.IsDeleted).HasDefaultValue(false);
-
-            // modelBuilder.Entity<Client>().HasIndex(c => c.PESEL).IsUnique().HasFilter("[PESEL] IS NOT NULL");
-            // modelBuilder.Entity<Client>().HasIndex(c => c.KRS).IsUnique().HasFilter("[KRS] IS NOT NULL");
             modelBuilder.Entity<Contract>().HasIndex(c => new { c.ClientId, c.SoftwareId }).IsUnique();
         }
     }
