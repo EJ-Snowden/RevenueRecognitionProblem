@@ -1,6 +1,7 @@
 ﻿using APBD_Project.DTOs;
 using APBD_Project.Models;
 using APBD_Project.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APBD_Project.Controllers;
@@ -9,6 +10,7 @@ namespace APBD_Project.Controllers;
 [Route("api/[controller]")]
 public class ClientsController(ClientService clientService) : ControllerBase
 {
+    [Authorize(Policy = "UserPolicy")]
     [HttpPost("individual")]
     public async Task<ActionResult<Client>> AddIndividualClient(IndividualClientDto individualClientDto)
     {
@@ -23,6 +25,7 @@ public class ClientsController(ClientService clientService) : ControllerBase
         }
     }
 
+    [Authorize(Policy = "UserPolicy")]
     [HttpPost("company")]
     public async Task<ActionResult<Client>> AddCompanyClient(CompanyClientDto companyClientDto)
     {
@@ -36,7 +39,8 @@ public class ClientsController(ClientService clientService) : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-
+    
+    [Authorize(Policy = "UserPolicy")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetClient(int id)
     {
@@ -45,6 +49,7 @@ public class ClientsController(ClientService clientService) : ControllerBase
         return Ok(client);
     }
     
+    [Authorize(Policy = "UserPolicy")]
     [HttpPut("individual/{id}")]
     public async Task<ActionResult<Client>> UpdateIndividualClient(int id, IndividualClientUpdateDto updateDto)
     {
@@ -59,6 +64,7 @@ public class ClientsController(ClientService clientService) : ControllerBase
         }
     }
 
+    [Authorize(Policy = "UserPolicy")]
     [HttpPut("company/{id}")]
     public async Task<ActionResult<Client>> UpdateCompanyClient(int id, CompanyClientUpdateDto updateDto)
     {
@@ -73,6 +79,7 @@ public class ClientsController(ClientService clientService) : ControllerBase
         }
     }
 
+    [Authorize(Policy = "AdminPolicy")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteClient(int id)
     {

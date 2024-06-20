@@ -1,8 +1,10 @@
 ﻿using APBD_Project.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APBD_Project.Controllers;
 
+[Authorize(Policy = "UserPolicy")]
 [ApiController]
 [Route("api/[controller]")]
 public class RevenueController(RevenueService revenueService) : ControllerBase
