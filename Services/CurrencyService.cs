@@ -6,7 +6,7 @@ public class CurrencyService
 {
     private readonly HttpClient _httpClient;
 
-    public CurrencyService(HttpClient httpClient, ILogger<CurrencyService> logger)
+    public CurrencyService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }

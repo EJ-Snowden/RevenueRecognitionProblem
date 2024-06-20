@@ -44,9 +44,15 @@ public class ClientsController(ClientService clientService) : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetClient(int id)
     {
-        var client = await clientService.GetClientByIdAsync(id);
-        if (client == null) return NotFound();
-        return Ok(client);
+        try
+        {
+            var client = await clientService.GetClientByIdAsync(id);
+            return Ok(client);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
     }
     
     [Authorize(Policy = "UserPolicy")]

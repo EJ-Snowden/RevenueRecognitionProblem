@@ -26,14 +26,17 @@ public class SoftwareController(SoftwareService softwareService) : ControllerBas
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Software>> GetSoftwareById(int id)
+    public async Task<IActionResult> GetSoftwareById(int id)
     {
-        var software = await softwareService.GetSoftwareByIdAsync(id);
-        if (software == null)
+        try
         {
-            return NotFound("No such software was found");
+            var software = await softwareService.GetSoftwareByIdAsync(id);
+            return Ok(software);
         }
-        return Ok(software);
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
     }
 
     [HttpGet]

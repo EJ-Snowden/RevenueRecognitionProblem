@@ -40,13 +40,16 @@ public class ContractsController(ContractService contractService) : ControllerBa
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Contract>> GetContractById(int id)
+    public async Task<IActionResult> GetContractById(int id)
     {
-        var contract = await contractService.GetContractById(id);
-        if (contract == null)
+        try
         {
-            return NotFound("No such contract found");
+            var contract = await contractService.GetContractById(id);
+            return Ok(contract);
         }
-        return Ok(contract);
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
     }
 }
